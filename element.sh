@@ -27,12 +27,47 @@ ARG_CONTROL() {
         fi
       fi
     fi
-    
+
   fi
 }
 
 SELECTOR() {
-    echo "$1 $2"
+  if [[ $2 == atomic_number ]]
+  then
+
+    CONTROL=$($PSQL "SELECT * FROM elements FULL JOIN properties USING(atomic_number) FULL JOIN types USING(type_id) WHERE $2=$1;")
+    if [[ -z $CONTROL ]]
+    then
+      echo "I could not find that element in the database."
+    else 
+      ($PSQL "SELECT * FROM elements FULL JOIN properties USING(atomic_number) FULL JOIN types USING(type_id) WHERE $2=$1;") | while IFS="|" read TYPE_ID ATOMIC_NUMBER SYMBOL NAME ATOMIC_MASS MELTING_POINT BOILING_POINT TYPE
+      do
+        echo "The element with atomic number $ATOMIC_NUMBER is $NAME ($SYMBOL). It's a $TYPE, with a mass of $ATOMIC_MASS amu. $NAME has a melting point of $MELTING_POINT celsius and a boiling point of $BOILING_POINT celsius."
+      done
+    fi
+
+  else 
+
+    CONTROL=$($PSQL "SELECT * FROM elements FULL JOIN properties USING(atomic_number) FULL JOIN types USING(type_id) WHERE $2='$1';")
+    if [[ -z $CONTROL ]]
+    then
+      echo "I could not find that element in the database."
+    else 
+      ($PSQL "SELECT * FROM elements FULL JOIN properties USING(atomic_number) FULL JOIN types USING(type_id) WHERE $2='$1';") | while IFS="|" read TYPE_ID ATOMIC_NUMBER SYMBOL NAME ATOMIC_MASS MELTING_POINT BOILING_POINT TYPE
+      do
+        echo "The element with atomic number $ATOMIC_NUMBER is $NAME ($SYMBOL). It's a $TYPE, with a mass of $ATOMIC_MASS amu. $NAME has a melting point of $MELTING_POINT celsius and a boiling point of $BOILING_POINT celsius."  
+      done
+    fi
+
+  fi
+
+  #if [[ -z $MESSAGE ]]
+  #then
+  #  echo "I could not find that element in the database."
+  #else
+  #  echo $MESSAGE
+  #fi
+
 }
 
 
